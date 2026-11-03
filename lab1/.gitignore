@@ -1,0 +1,17 @@
+*.o
+*.obj
+*.exe
+*.out
+*.app
+*.dll
+*.so
+*.dylib
+*.log
+build/
+cmake-build-debug/
+cmake-build-release/
+.vs/
+.vscode/
+*.swp
+*.swo
+*~
