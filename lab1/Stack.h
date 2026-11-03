@@ -72,5 +72,121 @@ inline std::string generate_random<std::string>(
 
 } // namespace detail
 
+template <typename T>
+class Stack {
+public:
+    static constexpr double kEpsilon = 1e-9;
+
+    Stack()
+        : data_(nullptr), size_(0), capacity_(0) {}
+
+    Stack(std::size_t count, const T& lower, const T& upper)
+        : data_(nullptr), size_(0), capacity_(0) {
+        for (std::size_t i = 0; i < count; ++i) {
+            *this += detail::generate_random(lower, upper);
+        }
+    }
+
+    Stack(const Stack& other)
+        : data_(nullptr), size_(other.size_), capacity_(other.capacity_) {
+        if (capacity_ > 0) {
+            data_ = new T[capacity_];
+            for (std::size_t i = 0; i < size_; ++i) {
+                data_[i] = other.data_[i];
+            }
+        }
+    }
+
+    Stack& operator=(const Stack& other) {
+        if (this != &other) {
+            clear();
+            size_ = other.size_;
+            capacity_ = other.capacity_;
+            if (capacity_ > 0) {
+                data_ = new T[capacity_];
+                for (std::size_t i = 0; i < size_; ++i) {
+                    data_[i] = other.data_[i];
+                }
+            }
+        }
+        return *this;
+    }
+
+    ~Stack() {
+        clear();
+    }
+
+    Stack& operator+=(const T& value) {
+        if (size_ == capacity_) {
+            resize(capacity_ == 0 ? 4 : capacity_ * 2);
+        }
+        data_[size_++] = value;
+        return *this;
+    }
+
+    Stack& operator-=(int) {
+        if (size_ == 0) {
+            throw std::runtime_error("Stack::pop: stack is empty");
+        }
+        --size_;
+        return *this;
+    }
+
+    T top() const {
+        if (size_ == 0) {
+            throw std::runtime_error("Stack::top: stack is empty");
+        }
+        return data_[size_ - 1];
+    }
+
+    std::size_t size() const { return size_; }
+    bool empty() const { return size_ == 0; }
+
+    bool operator==(const Stack& other) const {
+        if (size_ != other.size_) return false;
+        for (std::size_t i = 0; i < size_; ++i) {
+            if (!detail::values_equal(data_[i], other.data_[i])) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    bool operator!=(const Stack& other) const {
+        return !(*this == other);
+    }
+
+    friend std::ostream& operator<<(std::ostream& os, const Stack& stack) {
+        os << "Stack[" << stack.size_ << "]: {";
+        for (std::size_t i = 0; i < stack.size_; ++i) {
+            os << stack.data_[i];
+            if (i + 1 < stack.size_) os << ", ";
+        }
+        os << "}";
+        return os;
+    }
+
+private:
+    T* data_;
+    std::size_t size_;
+    std::size_t capacity_;
+
+    void resize(std::size_t new_capacity) {
+        T* new_data = new T[new_capacity];
+        for (std::size_t i = 0; i < size_; ++i) {
+            new_data[i] = data_[i];
+        }
+        delete[] data_;
+        data_ = new_data;
+        capacity_ = new_capacity;
+    }
+
+    void clear() {
+        delete[] data_;
+        data_ = nullptr;
+        size_ = 0;
+        capacity_ = 0;
+    }
+};
 
 #endif
